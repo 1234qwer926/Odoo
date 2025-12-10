@@ -1,0 +1,4 @@
+__pycache__
+*.log
+docker/addons/*
+!docker/addons/
