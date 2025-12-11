@@ -1,25 +1,30 @@
-# Use official Odoo 19 image
 FROM odoo:19
 
 USER root
 
-# Create addons directory
-RUN mkdir -p /mnt/custom-addons /var/log/odoo && chown -R odoo:odoo /mnt/custom-addons /var/log/odoo
+# Create custom directories
+RUN mkdir -p /mnt/custom-addons /var/log/odoo && \
+    chown -R odoo:odoo /mnt/custom-addons /var/log/odoo
 
-# Copy config and addons
+# Create Python venv for custom packages (PEP 668 fix)
+RUN python3 -m venv /opt/odoo-venv
+ENV PATH="/opt/odoo-venv/bin:$PATH"
+
+# Install python dependencies safely inside venv
+COPY requirements.txt /tmp/requirements.txt
+RUN if [ -s /tmp/requirements.txt ]; then \
+        /opt/odoo-venv/bin/pip install --upgrade pip && \
+        /opt/odoo-venv/bin/pip install --no-cache-dir -r /tmp/requirements.txt ; \
+    fi
+
+# Copy Odoo config + addons
 COPY docker/odoo.conf /etc/odoo/odoo.conf
 COPY docker/addons /mnt/custom-addons
 
-# Install extra Python dependencies
-COPY requirements.txt /tmp/requirements.txt
-RUN if [ -s /tmp/requirements.txt ]; then \
-      python3 -m pip install --no-cache-dir -r /tmp/requirements.txt ; \
-    fi
-
-# Copy entrypoint
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && chown odoo:odoo /entrypoint.sh
+# Permissions
+RUN chown -R odoo:odoo /etc/odoo /mnt/custom-addons
 
 USER odoo
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Entrypoint
+CMD ["odoo", "-c", "/etc/odoo/odoo.conf"]
