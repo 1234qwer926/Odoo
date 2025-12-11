@@ -11,4 +11,3 @@ This repository contains a complete setup for deploying Odoo on Render using Doc
    - A PostgreSQL database
    - A Docker-based Odoo app
 5. After deployment, open the URL:
-
