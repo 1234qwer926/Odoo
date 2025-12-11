@@ -16,10 +16,6 @@ RUN mkdir -p /mnt/custom-addons /var/log/odoo \
 COPY docker/odoo.conf /etc/odoo/odoo.conf
 RUN chown odoo:odoo /etc/odoo/odoo.conf
 
-# Install Python requirements
-COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
-
 USER odoo
 
 CMD ["odoo", "-c", "/etc/odoo/odoo.conf"]
